@@ -35,7 +35,7 @@ app.use('/images',express.static('upload/images'))
 app.post("/upload",upload.single('product'),(req,res)=>{
     res.json({
         success:1,
-        image_url:`http://localhost:${port}/images/${req.file.filename}`
+        image_url:`https://e-commerce-backend-yy5w.onrender.com/images/${req.file.filename}`
     })
 })
 
@@ -219,6 +219,13 @@ app.get('/popularinwomen',async(req,res)=>{
     let popular_in_women =products.slice(0,4);
     console.log("Popular in Women Fetched");
     res.send(popular_in_women);
+
+})
+app.get('/relatedproducts',async(req,res)=>{
+    let products=await Product.find({category:req.body.category});
+    let related_prodcuts =products.slice(0,4);
+    console.log("Related Products");
+    res.send(related_prodcuts);
 
 })
 
