@@ -18,7 +18,7 @@ app.use(cors());
 mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  useCreateIndex: true,
+  useFindAndModify: false, // Add this line to replace deprecated useCreateIndex
 });
 
 const conn = mongoose.connection;
@@ -118,96 +118,6 @@ app.get('/allproducts', async (req, res) => {
     res.json(products);
   } catch (err) {
     console.error("Error fetching products:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// User Schema
-const User = mongoose.model('User', {
-  name: { type: String },
-  email: { type: String, unique: true },
-  password: { type: String },
-  cartData: { type: Object },
-  date: { type: Date, default: Date.now },
-});
-
-// User registration route
-app.post('/signup', async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ success: false, error: "User already exists with this email address" });
-    }
-
-    let cart = {};
-    for (let i = 0; i < 3000; i++) {
-      cart[i] = 0;
-    }
-
-    const newUser = new User({
-      name,
-      email,
-      password,
-      cartData: cart,
-    });
-
-    await newUser.save();
-    console.log("User registered:", newUser);
-    
-    const token = jwt.sign({ user: newUser }, process.env.SECRET);
-    res.json({ success: true, token });
-  } catch (err) {
-    console.error("Error signing up:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// User login route
-app.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    let user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ success: false, error: "User not found" });
-    }
-
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(400).json({ success: false, error: "Incorrect password" });
-    }
-
-    const token = jwt.sign({ user }, process.env.SECRET);
-    res.json({ success: true, token });
-  } catch (err) {
-    console.error("Error logging in:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// Middleware to authenticate user
-const authenticateUser = async (req, res, next) => {
-  const token = req.header('auth-token');
-  if (!token) {
-    return res.status(401).json({ error: "Unauthorized: Please provide a valid token" });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.SECRET);
-    req.user = decoded.user;
-    next();
-  } catch (err) {
-    res.status(401).json({ error: "Unauthorized: Invalid token" });
-  }
-};
-
-// Example protected route (requires authentication)
-app.post('/protected-route', authenticateUser, async (req, res) => {
-  try {
-    // Your protected route logic here
-    res.json({ success: true, message: "Access granted to protected route" });
-  } catch (err) {
-    console.error("Error in protected route:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
