@@ -66,7 +66,7 @@ app.get("/", (req, res) => {
 app.post("/upload", upload.single('product'), (req, res) => {
   res.json({
     success: 1,
-    image_url: `https://your-domain.com/images/${req.file.filename}`
+    image_url: `https://e-commerce-backend-yy5w.onrender.com/images/${req.file.filename}`
   });
 });
 
@@ -81,7 +81,7 @@ app.post('/addproduct', async (req, res) => {
       brand: req.body.brand,
       name: req.body.name,
       description: req.body.description,
-      image: `https://your-domain.com/images/${req.body.image}`,
+      image: `https://e-commerce-backend-yy5w.onrender.com/images/${req.body.image}`,
       category: req.body.category,
       new_price: req.body.new_price,
       old_price: req.body.old_price,
