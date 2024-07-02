@@ -221,14 +221,6 @@ app.get('/popularinwomen',async(req,res)=>{
     res.send(popular_in_women);
 
 })
-// related prodcuts
-app.get('/relatedproducts',async(req,res)=>{
-    let products=await Product.find({category:req.body.category});
-    let related_prodcuts =products.slice(0,4);
-    console.log("Related Products");
-    res.send(related_prodcuts);
-
-})
 
 //creating middleware to fetch user
 const fetchUser=async(req,res,next)=>{
