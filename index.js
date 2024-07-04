@@ -1,7 +1,6 @@
 const express = require("express");
 const app =express();
 const mongoose =require("mongoose");
-const axios = require('axios');
 const jwt =require("jsonwebtoken");
 const multer =require("multer");
 const path =require("path");
@@ -10,14 +9,9 @@ const port =process.env.PORT;
 const cors = require("cors");
 const { type } = require("os");
 const { error } = require("console");
+
 app.use(express.json());
 app.use(cors());
-
-
-const GITHUB_REPO = 'E-Commerce-Backend';
-const GITHUB_OWNER = 'Bhumitg07205';
-const GITHUB_TOKEN = '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'; // Generate a token from your GitHub account with repo permissions
-const UPLOAD_FOLDER = 'upload/images'; // Desired path in your repository
 
 mongoose.connect(process.env.MONGO_URL);
 
@@ -28,52 +22,22 @@ app.get("/",(req,res)=>{
 
 })
 //Image Storage Engine
-
-const storage = multer.memoryStorage(); // Store file in memory
-const upload = multer({ storage: storage });
-
-// Function to upload file to GitHub
-const uploadToGitHub = async (file) => {
-    const filePath = `${UPLOAD_FOLDER}/${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`;
-    const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${filePath}`;
-    const content = file.buffer.toString('base64');
-
-    const response = await axios.put(
-        url,
-        {
-            message: `Add ${file.originalname}`,
-            content: content
-        },
-        {
-            headers: {
-                Authorization: `token ${GITHUB_TOKEN}`,
-                'Content-Type': 'application/json'
-            }
-        }
-    );
-
-    return response.data.content.download_url;
-};
-
-// Creating upload endpoint
-app.post("/upload", upload.single('product'), async (req, res) => {
-    try {
-        const file = req.file;
-        if (!file) {
-            return res.status(400).json({ success: 0, message: "No file uploaded" });
-        }
-
-        const imageUrl = await uploadToGitHub(file);
-        res.json({
-            success: 1,
-            image_url: imageUrl
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: 0, message: "Error uploading file to GitHub" });
+const storage=multer.diskStorage({
+    destination:'./upload/images',
+    filename:(req,file,cb)=>{
+        return cb(null,`${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
     }
-});
+})
 
+const upload =multer({storage:storage})
+//creating upload endpoint
+app.use('/images',express.static('upload/images'))
+app.post("/upload",upload.single('product'),(req,res)=>{
+    res.json({
+        success:1,
+        image_url:`https://e-commerce-backend-yy5w.onrender.com/images/${req.file.filename}`
+    })
+})
 
 //Schema for creating Products
 
